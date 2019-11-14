@@ -2,47 +2,31 @@ package com.boroday.echoserver;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Client {
 
     public static void main(String[] args) throws IOException {
-        System.out.println("Input your string:");
-        int input = 0;
-        int index = 0;
-        InputStream inputStreamForConsole = System.in;
-        byte[] stringToSend = new byte[20];
 
-        while (input != 10) {
-            input = inputStreamForConsole.read();
-            stringToSend[index] = (byte) input;
-            index++;
-        }
+        try (Socket socketToServer = new Socket("localhost", 9081);
+             BufferedReader bufferedReaderFromServer = new BufferedReader(new InputStreamReader(socketToServer.getInputStream()));
+             BufferedWriter bufferedWriterToServer = new BufferedWriter(new OutputStreamWriter(socketToServer.getOutputStream()))) {
 
-        Socket socketToServer = new Socket("localhost", 9081);
-        OutputStream outputStream = socketToServer.getOutputStream();
-        outputStream.write(stringToSend);
+            while (true) {
+                bufferedWriterToServer.write(readFromConsole() + '\n');
+                bufferedWriterToServer.flush();
 
-        byte[] bufferToReceive = new byte[30];
-        InputStream inputStream = socketToServer.getInputStream();
-        inputStream.read(bufferToReceive);
-
-        for (int i = 0; i < bufferToReceive.length; i++) {
-            System.out.print((char) bufferToReceive[i]);
+                System.out.println(bufferedReaderFromServer.readLine());
+            }
         }
     }
 
-    public byte[] readFromConsole() throws IOException {
-        System.out.println("Input your string:");
-        int input = 0;
-        int index = 0;
-        InputStream inputStreamForConsole = System.in;
-        byte[] stringToSend = new byte[20];
-
-        while (input != 10) {
-            input = inputStreamForConsole.read();
-            stringToSend[index] = (byte) input;
-            index++;
-        }
-        return stringToSend;
+    private static String readFromConsole() throws IOException {
+        InputStream inputStreamFromConsole = System.in;
+        BufferedReader bufferedReaderFromConsole = new BufferedReader(new InputStreamReader(inputStreamFromConsole));
+        System.out.println("Please input your string:");
+        return bufferedReaderFromConsole.readLine();
     }
 }
